@@ -1,5 +1,7 @@
+import {useState} from 'react';
 import {MediaItem} from '../types/DBTypes';
 import MediaRow from './MediaRow';
+import SingleView from './SingleView';
 
 const mediaArray: MediaItem[] = [
   {
@@ -39,6 +41,12 @@ const mediaArray: MediaItem[] = [
 ];
 
 const Home = () => {
+  const [selectedItem, setSelectedItem] = useState<MediaItem | undefined>(
+    undefined
+  );
+
+  console.log('Current selected item:', selectedItem); 
+
   return (
     <>
       <h2>My Media</h2>
@@ -51,14 +59,24 @@ const Home = () => {
             <th>Created</th>
             <th>Size</th>
             <th>Type</th>
+            <th>Action</th> {}
           </tr>
         </thead>
         <tbody>
           {mediaArray.map((item) => (
-            <MediaRow key={item.media_id} item={item} />
+            <MediaRow
+              key={item.media_id}
+              item={item}
+              setSelectedItem={setSelectedItem} 
+            />
           ))}
         </tbody>
       </table>
+      
+      {/* If selectedItem exists, show the SingleView! */}
+      {selectedItem && (
+        <SingleView item={selectedItem} setSelectedItem={setSelectedItem} />
+      )}
     </>
   );
 };
