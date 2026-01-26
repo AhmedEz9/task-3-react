@@ -1,4 +1,4 @@
-import {MediaItem} from '../types/DBTypes';
+import type {MediaItem} from '../types/DBTypes';
 import MediaRow from '../components/MediaRow';
 
 const mediaArray: MediaItem[] = [

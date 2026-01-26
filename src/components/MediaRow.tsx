@@ -1,5 +1,5 @@
 import {Link} from 'react-router';
-import {MediaItem} from '../types/DBTypes';
+import type {MediaItem} from '../types/DBTypes';
 
 const MediaRow = (props: {item: MediaItem}) => {
   const {item} = props;

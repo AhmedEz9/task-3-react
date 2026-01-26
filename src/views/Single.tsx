@@ -1,5 +1,5 @@
 import {useLocation, useNavigate} from 'react-router';
-import {MediaItem} from '../types/DBTypes';
+import type {MediaItem} from '../types/DBTypes';
 
 const Single = () => {
   const {state} = useLocation();
