@@ -1,47 +1,34 @@
-import type {MediaItem} from '../types/DBTypes';
+import { useState, useEffect } from 'react';
 import MediaRow from '../components/MediaRow';
-
-const mediaArray: MediaItem[] = [
-  {
-    media_id: 8,
-    user_id: 5,
-    filename: 'https://placehold.co/600x400?text=Pic1',
-    thumbnail: 'https://placehold.co/320x240?text=Thumb1',
-    filesize: 170469,
-    media_type: 'image/jpeg',
-    title: 'Picture 1',
-    description: 'This is a placeholder picture.',
-    created_at: '2024-01-07T20:49:34.000Z',
-  },
-  {
-    media_id: 9,
-    user_id: 7,
-    filename: 'https://placehold.co/600x400?text=Pic2',
-    thumbnail: 'https://placehold.co/320x240?text=Thumb2',
-    filesize: 1002912,
-    media_type: 'image/jpeg',
-    title: 'Pic 2',
-    description: 'Another cool picture',
-    created_at: '2024-01-07T21:32:27.000Z',
-  },
-  {
-    media_id: 17,
-    user_id: 2,
-    filename:
-      'http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_normal.mp4',
-    thumbnail: 'https://placehold.co/320x240?text=Video',
-    filesize: 1236616,
-    media_type: 'video/mp4',
-    title: 'Bunny',
-    description: 'Butterflies fly around the bunny.',
-    created_at: '2024-01-07T20:48:13.000Z',
-  },
-];
+import type { MediaItem } from '../types/DBTypes';
 
 const Home = () => {
+  // 1. State to hold our media items (starts as an empty array)
+  const [mediaArray, setMediaArray] = useState<MediaItem[]>([]);
+
+  // 2. Function to fetch data from test.json
+  const getMedia = async () => {
+    try {
+      const response = await fetch('test.json');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const json = await response.json();
+      
+      setMediaArray(json);
+      console.log('Fetched data:', json); 
+    } catch (error) {
+      console.log('Error fetching media:', (error as Error).message);
+    }
+  };
+
+  useEffect(() => {
+    getMedia();
+  }, []);
+
   return (
     <>
-      <h2>My Media</h2>
+      <h2>Home</h2>
       <table>
         <thead>
           <tr>
@@ -51,10 +38,11 @@ const Home = () => {
             <th>Created</th>
             <th>Size</th>
             <th>Type</th>
-            <th>Action</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
+          {/* Loop through the state array and render a MediaRow for each item */}
           {mediaArray.map((item) => (
             <MediaRow key={item.media_id} item={item} />
           ))}
