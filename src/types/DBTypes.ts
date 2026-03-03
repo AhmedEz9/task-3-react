@@ -10,3 +10,6 @@ export interface MediaItem {
   created_at: string;
   screenshots?: string[];
 }
+export type MediaItemWithOwner = MediaItem & {
+  username: string;
+};

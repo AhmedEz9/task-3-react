@@ -1,41 +1,31 @@
-import {useLocation, useNavigate} from 'react-router';
-import type {MediaItem} from '../types/DBTypes';
+import { useLocation, Navigate } from 'react-router';
+import type { MediaItemWithOwner } from '../types/DBTypes';
 
 const Single = () => {
-  const {state} = useLocation();
-  const navigate = useNavigate();
-
-  const item: MediaItem = state?.item;
+  const location = useLocation();
+  // 1. Update the type here
+  const item = location.state as MediaItemWithOwner;
 
   if (!item) {
-    return <p>No item selected.</p>;
+    return <Navigate to="/" />;
   }
 
   return (
-    <div>
-      {}
-      <h3>{item.title}</h3>
+    <>
+      <h2>{item.title}</h2>
+      {/* 2. Display the owner's username */}
+      <p><strong>Uploaded by:</strong> {item.username}</p>
       
       {item.media_type.includes('video') ? (
-        <video width="640" height="480" controls>
-          <source src={item.filename} type={item.media_type} />
-        </video>
+        <video controls src={item.filename} width="400"></video>
       ) : (
         <img src={item.filename} alt={item.title} width="400" />
       )}
-
-      <p>File size: {item.filesize}</p>
+      <p>{item.description}</p>
+      <p>Size: {item.filesize} bytes</p>
       <p>Type: {item.media_type}</p>
       <p>Created: {new Date(item.created_at).toLocaleString('fi-FI')}</p>
-
-      {}
-      <button 
-        onClick={() => navigate(-1)}
-        style={{marginTop: '20px', padding: '10px 20px'}}
-      >
-        Go Back
-      </button>
-    </div>
+    </>
   );
 };
 
