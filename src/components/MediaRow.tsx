@@ -1,7 +1,6 @@
 import { Link } from 'react-router';
 import type { MediaItemWithOwner } from '../types/DBTypes';
 
-// 1. Update the type here to MediaItemWithOwner
 const MediaRow = ({ item }: { item: MediaItemWithOwner }) => {
   return (
     <tr>

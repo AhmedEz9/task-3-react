@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { MediaItem, MediaItemWithOwner } from '../types/DBTypes';
+import type { Credentials } from '../types/LocalTypes';
 
 const useMedia = () => {
   const [mediaArray, setMediaArray] = useState<MediaItemWithOwner[]>([]);
@@ -35,4 +36,48 @@ const useMedia = () => {
   return { mediaArray };
 };
 
-export { useMedia };
+const useAuthentication = () => {
+  const postLogin = async (inputs: Credentials) => {
+    const fetchOptions = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(inputs),
+    };
+    
+    // Send the data to the auth API
+    const response = await fetch(import.meta.env.VITE_AUTH_API + '/auth/login', fetchOptions);
+    
+    if (!response.ok) {
+      throw new Error('Login failed: Invalid credentials');
+    }
+    
+    const loginResult = await response.json();
+    return loginResult;
+  };
+
+  const postRegister = async (inputs: Record<string, string>) => {
+    const fetchOptions = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(inputs),
+    };
+    
+    // The registration endpoint is /users
+    const response = await fetch(import.meta.env.VITE_AUTH_API + '/users', fetchOptions);
+    
+    if (!response.ok) {
+      throw new Error('Registration failed');
+    }
+    
+    const registerResult = await response.json();
+    return registerResult;
+  };
+
+  return { postLogin, postRegister };
+};
+
+export { useMedia, useAuthentication };
