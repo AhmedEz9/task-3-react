@@ -1,5 +1,10 @@
 import { useState, useEffect } from 'react';
-import type { MediaItem, MediaItemWithOwner } from '../types/DBTypes';
+import type { 
+  MediaItem, 
+  MediaItemWithOwner, 
+  UploadResponse, 
+  MediaResponse 
+} from '../types/DBTypes';
 import type { Credentials } from '../types/LocalTypes';
 
 const useMedia = () => {
@@ -33,7 +38,34 @@ const useMedia = () => {
     getMedia();
   }, []);
 
-  return { mediaArray };
+  const postMedia = async (
+    fileResponse: UploadResponse,
+    inputs: Record<string, string>,
+    token: string
+  ): Promise<MediaResponse> => {
+    const mediaData = {
+      title: inputs.title,
+      description: inputs.description,
+      filename: fileResponse.data.filename,
+      media_type: fileResponse.data.media_type,
+      filesize: fileResponse.data.filesize,
+    };
+
+    const fetchOptions = {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(mediaData),
+    };
+
+    const response = await fetch(import.meta.env.VITE_MEDIA_API + '/media', fetchOptions);
+    if (!response.ok) throw new Error('Media upload failed');
+    return await response.json();
+  };
+
+  return { mediaArray, postMedia };
 };
 
 const useAuthentication = () => {
@@ -77,4 +109,25 @@ const useAuthentication = () => {
   return { postLogin, postRegister, getUserByToken };
 };
 
-export { useMedia, useAuthentication };
+const useFile = () => {
+  const postFile = async (file: File, token: string): Promise<UploadResponse> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const fetchOptions = {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+      },
+      body: formData,
+    };
+
+    const response = await fetch(import.meta.env.VITE_UPLOAD_API + '/upload', fetchOptions);
+    if (!response.ok) throw new Error('File upload failed');
+    return await response.json();
+  };
+
+  return { postFile };
+};
+
+export { useMedia, useAuthentication, useFile };

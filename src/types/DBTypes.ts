@@ -29,3 +29,17 @@ export type AuthResponse = {
   token: string;
   user: User;
 };
+
+export type UploadResponse = {
+  message: string;
+  data: {
+    filename: string;
+    media_type: string;
+    filesize: number;
+  };
+};
+
+export type MediaResponse = {
+  message: string;
+  media_id: number;
+};
