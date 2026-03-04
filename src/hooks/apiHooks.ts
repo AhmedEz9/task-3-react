@@ -45,16 +45,9 @@ const useAuthentication = () => {
       },
       body: JSON.stringify(inputs),
     };
-    
-    // Send the data to the auth API
     const response = await fetch(import.meta.env.VITE_AUTH_API + '/auth/login', fetchOptions);
-    
-    if (!response.ok) {
-      throw new Error('Login failed: Invalid credentials');
-    }
-    
-    const loginResult = await response.json();
-    return loginResult;
+    if (!response.ok) throw new Error('Login failed: Invalid credentials');
+    return await response.json();
   };
 
   const postRegister = async (inputs: Record<string, string>) => {
@@ -65,19 +58,23 @@ const useAuthentication = () => {
       },
       body: JSON.stringify(inputs),
     };
-    
-    // The registration endpoint is /users
     const response = await fetch(import.meta.env.VITE_AUTH_API + '/users', fetchOptions);
-    
-    if (!response.ok) {
-      throw new Error('Registration failed');
-    }
-    
-    const registerResult = await response.json();
-    return registerResult;
+    if (!response.ok) throw new Error('Registration failed');
+    return await response.json();
   };
 
-  return { postLogin, postRegister };
+  const getUserByToken = async (token: string) => {
+    const fetchOptions = {
+      headers: {
+        Authorization: 'Bearer ' + token,
+      },
+    };
+    const response = await fetch(import.meta.env.VITE_AUTH_API + '/users/token', fetchOptions);
+    if (!response.ok) throw new Error('Invalid token');
+    return await response.json();
+  };
+
+  return { postLogin, postRegister, getUserByToken };
 };
 
 export { useMedia, useAuthentication };

@@ -10,6 +10,22 @@ export interface MediaItem {
   created_at: string;
   screenshots?: string[];
 }
+
 export type MediaItemWithOwner = MediaItem & {
   username: string;
+};
+
+
+export type User = {
+  user_id: number;
+  username: string;
+  password?: string; 
+  email: string;
+  created_at: string;
+};
+
+export type AuthResponse = {
+  message: string;
+  token: string;
+  user: User;
 };

@@ -1,11 +1,15 @@
+import { useContext } from 'react';
 import { useNavigate } from 'react-router';
 import useForm from '../hooks/formHooks';
 import { useAuthentication } from '../hooks/apiHooks';
+import { UserContext } from '../contexts/UserContext';
 import type { Credentials } from '../types/LocalTypes';
 
 const LoginForm = () => {
   const navigate = useNavigate();
   const { postLogin } = useAuthentication();
+  
+  const userContext = useContext(UserContext);
 
   const initValues = {
     username: '',
@@ -18,6 +22,11 @@ const LoginForm = () => {
       console.log('Server response:', result);
       
       localStorage.setItem('token', result.token);
+
+      if (userContext) {
+        userContext.handleLogin(result.user);
+      }
+      
       navigate('/');
     } catch (error) {
       console.error('Error during login:', (error as Error).message);
