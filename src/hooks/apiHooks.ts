@@ -142,4 +142,52 @@ const useFile = () => {
   return { postFile };
 };
 
-export { useMedia, useAuthentication, useFile };
+const useLike = () => {
+  const postLike = async (media_id: number, token: string) => {
+    const fetchOptions = {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ media_id }),
+    };
+    const response = await fetch(import.meta.env.VITE_MEDIA_API + '/likes', fetchOptions);
+    if (!response.ok) throw new Error('Like failed');
+    return await response.json();
+  };
+
+  const deleteLike = async (like_id: number, token: string) => {
+    const fetchOptions = {
+      method: 'DELETE',
+      headers: {
+        Authorization: 'Bearer ' + token,
+      },
+    };
+    const response = await fetch(import.meta.env.VITE_MEDIA_API + '/likes/' + like_id, fetchOptions);
+    if (!response.ok) throw new Error('Delete like failed');
+    return await response.json();
+  };
+
+  const getCountByMediaId = async (media_id: number) => {
+    const response = await fetch(import.meta.env.VITE_MEDIA_API + '/likes/count/' + media_id);
+    if (!response.ok) throw new Error('Get like count failed');
+    const result = await response.json();
+    return result.count;
+  };
+
+  const getUserLike = async (media_id: number, token: string) => {
+    const fetchOptions = {
+      headers: {
+        Authorization: 'Bearer ' + token,
+      },
+    };
+    const response = await fetch(import.meta.env.VITE_MEDIA_API + '/likes/bymedia/user/' + media_id, fetchOptions);
+    if (!response.ok) throw new Error('Get user like failed');
+    return await response.json();
+  };
+
+  return { postLike, deleteLike, getCountByMediaId, getUserLike };
+};
+
+export { useMedia, useAuthentication, useFile, useLike };
