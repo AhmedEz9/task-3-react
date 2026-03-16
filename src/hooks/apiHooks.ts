@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import type { 
   MediaItem, 
   MediaItemWithOwner, 
@@ -8,35 +8,27 @@ import type {
 import type { Credentials } from '../types/LocalTypes';
 
 const useMedia = () => {
-  const [mediaArray, setMediaArray] = useState<MediaItemWithOwner[]>([]);
+  const fetchAllMedia = async (): Promise<MediaItemWithOwner[]> => {
+    const response = await fetch(import.meta.env.VITE_MEDIA_API + '/media');
+    if (!response.ok) throw new Error('Network response was not ok');
+    const mediaItems: MediaItem[] = await response.json();
 
-  const getMedia = async () => {
-    try {
-      const response = await fetch(import.meta.env.VITE_MEDIA_API + '/media');
-      if (!response.ok) throw new Error('Network response was not ok');
-      const mediaItems: MediaItem[] = await response.json();
-
-      const itemsWithOwner: MediaItemWithOwner[] = await Promise.all(
-        mediaItems.map(async (item) => {
-          const userResponse = await fetch(import.meta.env.VITE_AUTH_API + '/users/' + item.user_id);
-          const userData = await userResponse.json();
-          
-          return {
-            ...item,
-            username: userData.username,
-          };
-        })
-      );
-
-      setMediaArray(itemsWithOwner);
-    } catch (error) {
-      console.error('Error fetching media:', (error as Error).message);
-    }
+    return await Promise.all(
+      mediaItems.map(async (item) => {
+        const userResponse = await fetch(import.meta.env.VITE_AUTH_API + '/users/' + item.user_id);
+        const userData = await userResponse.json();
+        return {
+          ...item,
+          username: userData.username,
+        };
+      })
+    );
   };
 
-  useEffect(() => {
-    getMedia();
-  }, []);
+  const { data: mediaArray, error, isLoading } = useQuery({
+    queryKey: ['media'],
+    queryFn: fetchAllMedia,
+  });
 
   const postMedia = async (
     fileResponse: UploadResponse,
@@ -65,7 +57,7 @@ const useMedia = () => {
     return await response.json();
   };
 
-  return { mediaArray, postMedia };
+  return { mediaArray, postMedia, error, isLoading };
 };
 
 const useAuthentication = () => {
@@ -192,9 +184,9 @@ const useLike = () => {
 
 const useComment = () => {
   const postComment = async (
-     comment_text: string,
-     media_id: number,
-     token: string) => {
+      comment_text: string,
+      media_id: number,
+      token: string) => {
       const fetchOptions = {
         method: 'POST',
         headers: {

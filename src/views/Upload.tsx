@@ -1,116 +1,71 @@
 import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
+import { useFile, useMedia } from '../hooks/apiHooks';
 import useForm from '../hooks/formHooks';
-import { useFile, useMedia } from '../hooks/apiHooks'; 
 
 const Upload = () => {
-  const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const navigate = useNavigate();
-  
-  // Bring in the API functions
   const { postFile } = useFile();
   const { postMedia } = useMedia();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient(); 
 
-  const initValues = {
-    title: '',
-    description: '',
-  };
+  const initValues = { title: '', description: '' };
 
-  const doUpload = async (formInputs: Record<string, string>) => {
-    setUploading(true);
-    try {
-      // 1. Grab the user's token from memory
+  const uploadMutation = useMutation({
+    mutationFn: async (inputs: Record<string, string>) => {
       const token = localStorage.getItem('token');
-      if (!token) throw new Error('No token found. Are you logged in?');
-      if (!file) throw new Error('No file selected.');
+      if (!file || !token) throw new Error('File or token missing');
 
-      console.log('1. Uploading the actual file to the file server...');
       const fileResult = await postFile(file, token);
-      console.log('File server response:', fileResult);
-
-      console.log('2. Linking the file to your title/description in the database...');
-      const mediaResult = await postMedia(fileResult, formInputs, token);
-      console.log('Database response:', mediaResult);
-
-      // If we make it here, it was a massive success!
+      return await postMedia(fileResult, inputs, token);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['media'] });
       alert('Upload successful!');
       navigate('/');
-    } catch (e) {
-      console.error('Upload error:', (e as Error).message);
-      alert('Upload failed. Check the console for details.');
-    } finally {
-      // Whether it succeeded or failed, turn off the loading text
-      setUploading(false);
-    }
+    },
+    onError: (error: Error) => {
+      alert(`Upload failed: ${error.message}`);
+    },
+  });
+
+  const doUpload = (inputs: Record<string, string>) => {
+    uploadMutation.mutate(inputs);
   };
 
-  const { inputs, handleInputChange, handleSubmit } = useForm(doUpload, initValues);
+  const { handleSubmit, handleInputChange } = useForm(doUpload, initValues);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFile(e.target.files[0]);
-    }
+    if (e.target.files) setFile(e.target.files[0]);
   };
 
   return (
-    <>
-      <h2>Upload Media</h2>
-      {uploading && <p style={{ color: 'blue', fontWeight: 'bold' }}>Uploading... Please wait.</p>}
-      
-      <form onSubmit={handleSubmit}>
+    <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md mt-10">
+      <h2 className="text-2xl font-bold mb-6">Upload Media</h2>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
-          <label htmlFor="title">Title</label>
-          <input
-            name="title"
-            type="text"
-            id="title"
-            onChange={handleInputChange}
-          />
+          <label className="block mb-1 font-medium">Title</label>
+          <input name="title" type="text" onChange={handleInputChange} className="w-full border p-2 rounded" required />
         </div>
-        
         <div>
-          <label htmlFor="description">Description</label>
-          <textarea
-            name="description"
-            rows={5}
-            id="description"
-            onChange={handleInputChange}
-          ></textarea>
+          <label className="block mb-1 font-medium">Description</label>
+          <textarea name="description" onChange={handleInputChange} className="w-full border p-2 rounded" required />
         </div>
-        
         <div>
-          <label htmlFor="file">File</label>
-          <input
-            name="file"
-            type="file"
-            id="file"
-            accept="image/*, video/*"
-            onChange={handleFileChange}
-          />
+          <label className="block mb-1 font-medium">File</label>
+          <input type="file" accept="image/*,video/*" onChange={handleFileChange} className="w-full" required />
         </div>
-        
-        <div style={{ margin: '15px 0' }}>
-          <img
-            src={
-              file
-                ? URL.createObjectURL(file)
-                : 'https://placehold.co/320x240?text=Choose+image'
-            }
-            alt="preview"
-            width="200"
-            style={{ border: '1px solid #ccc', borderRadius: '4px' }}
-          />
-        </div>
-        
-        <button
-          type="submit"
-          disabled={!file || inputs.title.length < 3}
+        <button 
+          type="submit" 
+          disabled={uploadMutation.isPending}
+          className={`bg-blue-600 text-white py-2 rounded font-bold transition-colors ${uploadMutation.isPending ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
         >
-          Upload
+          {uploadMutation.isPending ? 'Uploading...' : 'Upload'}
         </button>
       </form>
-    </>
+    </div>
   );
 };
 
