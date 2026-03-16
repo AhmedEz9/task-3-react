@@ -106,7 +106,19 @@ const useAuthentication = () => {
     return await response.json();
   };
 
-  return { postLogin, postRegister, getUserByToken };
+  const getUsernameAvailable = async (username: string) => {
+    const response = await fetch(import.meta.env.VITE_AUTH_API + '/users/username/' + username);
+    const result = await response.json();
+    return result.available;
+  };
+
+  const getEmailAvailable = async (email: string) => {
+    const response = await fetch(import.meta.env.VITE_AUTH_API + '/users/email/' + email);
+    const result = await response.json();
+    return result.available;
+  };
+
+  return { postLogin, postRegister, getUserByToken, getUsernameAvailable, getEmailAvailable };
 };
 
 const useFile = () => {
