@@ -190,4 +190,40 @@ const useLike = () => {
   return { postLike, deleteLike, getCountByMediaId, getUserLike };
 };
 
-export { useMedia, useAuthentication, useFile, useLike };
+const useComment = () => {
+  const postComment = async (
+     comment_text: string,
+     media_id: number,
+     token: string) => {
+      const fetchOptions = {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ comment_text, media_id }),
+      };
+      const response = await fetch(import.meta.env.VITE_MEDIA_API + '/comments', fetchOptions);
+      if (!response.ok) throw new Error('Post comment failed');
+      return await response.json();
+  };
+
+  const getCommentsByMediaId = async (media_id: number) => {
+      const response = await fetch(import.meta.env.VITE_MEDIA_API + '/comments/bymedia/' + media_id);
+      if (!response.ok) throw new Error('Get comments failed');
+      const comments: (Comment & {user_id: number})[] = await response.json();
+      
+      const commentsWithUsername = await Promise.all(
+        comments.map(async (comment) => {
+          const userRes = await fetch(import.meta.env.VITE_AUTH_API + '/users/' + comment.user_id);
+          const userData = await userRes.json();
+          return { ...comment, username: userData.username };
+        })
+      );
+      return commentsWithUsername;
+  };
+
+  return { postComment, getCommentsByMediaId };
+};
+
+export { useMedia, useAuthentication, useFile, useLike, useComment };

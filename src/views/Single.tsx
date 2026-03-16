@@ -1,6 +1,7 @@
 import { useLocation, Navigate } from 'react-router';
 import type { MediaItemWithOwner } from '../types/DBTypes';
-import Likes from '../components/Likes'; 
+import Likes from '../components/Likes';
+import Comments from '../components/Comments'; 
 
 const Single = () => {
   const location = useLocation();
@@ -25,8 +26,10 @@ const Single = () => {
       
       <p className="text-gray-800 text-lg mb-4">{item.description}</p>
       
-      {}
       <Likes item={item} />
+
+      {}
+      <Comments item={item} />
       
       <div className="mt-6 text-sm text-gray-400 border-t pt-4">
         <p>Size: {item.filesize} bytes</p>
