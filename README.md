@@ -5,7 +5,6 @@ This template provides a minimal setup to get React working in Vite with HMR and
 ## Live Demo
 
 [Click here to view the app](http://users.metropolia.fi/~ahmedez/react3/week5/)
-[Click here to view the app](http://users.metropolia.fi/~ahmedez/upload/)
 
 Currently, two official plugins are available:
 
